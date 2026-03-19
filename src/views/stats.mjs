@@ -97,15 +97,15 @@ function renderPieChart(data, width = 300, height = 300) {
     currentAngle += sliceAngle;
     
     legend += `
-      <div class="legend-item" style="display: flex; align-items: center; margin-bottom: 4px;">
-        <span style="display: inline-block; width: 12px; height: 12px; background-color: ${color}; margin-right: 8px; border-radius: 2px;"></span>
-        <span style="font-size: 12px; color: #4b5563;">${escapeHtml(d.model || 'Unknown')} (${formatNumber(d.count || 0)})</span>
+      <div class="legend-item">
+        <span class="legend-color" style="background-color: ${color}"></span>
+        <span class="legend-label">${escapeHtml(d.model || 'Unknown')} (${formatNumber(d.count || 0)})</span>
       </div>
     `;
   });
   
   return `
-    <div style="display: flex; align-items: center; gap: 20px;">
+    <div class="pie-chart-container">
       <svg width="${width}" height="${height}" viewBox="0 0 ${width} ${height}" class="chart-svg">
         ${paths}
       </svg>
@@ -169,38 +169,54 @@ export function renderStatsPage(data) {
         <h1>${t("stats.title")}</h1>
       </header>
       
-      <section class="stats-overview" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-bottom: 32px;">
-        <div class="stat-card" style="background: white; padding: 20px; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); border: 1px solid #e5e7eb;">
-          <h3 style="margin: 0 0 8px 0; color: #6b7280; font-size: 14px; font-weight: 500;">${t("stats.total_sessions")}</h3>
-          <p class="stat-value" style="margin: 0; font-size: 24px; font-weight: 600; color: #111827;">${formatNumber(overview.totalSessions || 0)}</p>
-        </div>
-        <div class="stat-card" style="background: white; padding: 20px; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); border: 1px solid #e5e7eb;">
-          <h3 style="margin: 0 0 8px 0; color: #6b7280; font-size: 14px; font-weight: 500;">${t("stats.total_messages")}</h3>
-          <p class="stat-value" style="margin: 0; font-size: 24px; font-weight: 600; color: #111827;">${formatNumber(overview.totalMessages || 0)}</p>
-        </div>
-        <div class="stat-card" style="background: white; padding: 20px; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); border: 1px solid #e5e7eb;">
-          <h3 style="margin: 0 0 8px 0; color: #6b7280; font-size: 14px; font-weight: 500;">${t("stats.token_usage")}</h3>
-          <p class="stat-value" style="margin: 0; font-size: 24px; font-weight: 600; color: #111827;">${formatNumber(totalTokens)}</p>
+      <section class="stats-overview">
+        <div class="stat-card">
+          <div class="stat-card-header">
+            <span class="dash-file">overview.json</span>
+          </div>
+          <div class="stat-card-body">
+            <div class="stat-entry">
+              <span class="ck">"${t("stats.total_sessions")}"</span>: <span class="cn">${formatNumber(overview.totalSessions || 0)}</span>
+            </div>
+            <div class="stat-entry">
+              <span class="ck">"${t("stats.total_messages")}"</span>: <span class="cn">${formatNumber(overview.totalMessages || 0)}</span>
+            </div>
+            <div class="stat-entry">
+              <span class="ck">"${t("stats.token_usage")}"</span>: <span class="cn">${formatNumber(totalTokens)}</span>
+            </div>
+          </div>
         </div>
       </section>
 
-      <section class="chart-section" style="background: white; padding: 24px; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); border: 1px solid #e5e7eb; margin-bottom: 24px;">
-        <h2 style="margin: 0 0 16px 0; font-size: 18px; color: #111827;">${t("stats.token_trend")}</h2>
-        <div style="overflow-x: auto;">
+      <section class="chart-section">
+        <div class="chart-section-header">
+          <span class="dash-file">token-trend.svg</span>
+          <span class="dash-badge">chart</span>
+        </div>
+        <h2 class="chart-title">${t("stats.token_trend")}</h2>
+        <div class="chart-container">
           ${renderLineChart(tokenStats)}
         </div>
       </section>
 
-      <section class="chart-section" style="background: white; padding: 24px; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); border: 1px solid #e5e7eb; margin-bottom: 24px;">
-        <h2 style="margin: 0 0 16px 0; font-size: 18px; color: #111827;">${t("stats.model_distribution")}</h2>
-        <div style="overflow-x: auto;">
+      <section class="chart-section">
+        <div class="chart-section-header">
+          <span class="dash-file">model-distribution.svg</span>
+          <span class="dash-badge">chart</span>
+        </div>
+        <h2 class="chart-title">${t("stats.model_distribution")}</h2>
+        <div class="chart-container">
           ${renderPieChart(modelDistribution)}
         </div>
       </section>
 
-      <section class="chart-section" style="background: white; padding: 24px; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); border: 1px solid #e5e7eb; margin-bottom: 24px;">
-        <h2 style="margin: 0 0 16px 0; font-size: 18px; color: #111827;">${t("stats.daily_sessions")}</h2>
-        <div style="overflow-x: auto;">
+      <section class="chart-section">
+        <div class="chart-section-header">
+          <span class="dash-file">daily-sessions.svg</span>
+          <span class="dash-badge">chart</span>
+        </div>
+        <h2 class="chart-title">${t("stats.daily_sessions")}</h2>
+        <div class="chart-container">
           ${renderBarChart(dailySessions)}
         </div>
       </section>
