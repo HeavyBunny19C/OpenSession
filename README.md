@@ -119,7 +119,14 @@ oh-my-opensession --open  # 自动弹浏览器，懒人福音
 
 - **Node.js** >= 22.5.0（用了内置的 `node:sqlite`，所以版本要求高一丢丢）
 - 装了 [OpenCode](https://opencode.ai) 并且有会话数据（没数据也能跑，就是空空如也 😅）
-- macOS / Windows x64
+
+| 平台 | 架构 | 状态 |
+|:---|:---|:---:|
+| 🍎 macOS | x64 / Apple Silicon (arm64) | ✅ |
+| 🪟 Windows | x64 / arm64 | ✅ |
+| 🐧 Linux | x64 / arm64 | ✅ |
+
+> 纯 JS，零 native 依赖，有 Node.js 就能跑 🏃
 
 ## ⚙️ 命令行选项
 

@@ -6,14 +6,16 @@ function defaultDbPath() {
   if (process.platform === "win32") {
     return path.join(process.env.LOCALAPPDATA || path.join(os.homedir(), "AppData", "Local"), "opencode", "opencode.db");
   }
-  return path.join(os.homedir(), ".local", "share", "opencode", "opencode.db");
+  const dataHome = process.env.XDG_DATA_HOME || path.join(os.homedir(), ".local", "share");
+  return path.join(dataHome, "opencode", "opencode.db");
 }
 
 function defaultMetaDir() {
   if (process.platform === "win32") {
     return path.join(process.env.APPDATA || path.join(os.homedir(), "AppData", "Roaming"), "oh-my-opensession");
   }
-  return path.join(os.homedir(), ".config", "oh-my-opensession");
+  const configHome = process.env.XDG_CONFIG_HOME || path.join(os.homedir(), ".config");
+  return path.join(configHome, "oh-my-opensession");
 }
 
 const defaults = {

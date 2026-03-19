@@ -119,7 +119,14 @@ oh-my-opensession --open  # auto-opens browser, for the lazy among us
 
 - **Node.js** >= 22.5.0 (uses built-in `node:sqlite`, hence the version bump)
 - [OpenCode](https://opencode.ai) installed with session data (runs without data too, just... empty 😅)
-- macOS / Windows x64
+
+| Platform | Architecture | Status |
+|:---|:---|:---:|
+| 🍎 macOS | x64 / Apple Silicon (arm64) | ✅ |
+| 🪟 Windows | x64 / arm64 | ✅ |
+| 🐧 Linux | x64 / arm64 | ✅ |
+
+> Pure JS, zero native dependencies — if Node.js runs, we run 🏃
 
 ## ⚙️ CLI Options
 
