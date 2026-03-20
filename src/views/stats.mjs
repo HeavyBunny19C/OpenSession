@@ -159,7 +159,7 @@ function renderBarChart(data, width = 600, height = 200) {
 }
 
 export function renderStatsPage(data) {
-  const { tokenStats = [], modelDistribution = [], dailySessions = [], overview = {} } = data;
+  const { tokenStats = [], modelDistribution = [], dailySessions = [], overview = {}, provider = "opencode", providers = [] } = data;
   
   const totalTokens = tokenStats.reduce((sum, d) => sum + (d.total_tokens || 0), 0);
   
@@ -223,5 +223,5 @@ export function renderStatsPage(data) {
     </div>
   `;
   
-  return layout(t("stats.title"), content, "stats");
+  return layout(t("stats.title"), content, "stats", { provider, providers });
 }

@@ -80,7 +80,7 @@ export function formatDuration(startMs, endMs) {
   return seconds ? `${minutes}m ${seconds}s` : `${minutes}m`;
 }
 
-export function sessionCard(s, active = false, { showCheckbox = false } = {}) {
+export function sessionCard(s, active = false, { showCheckbox = false, provider = "opencode" } = {}) {
   const title = s.title || s.slug || s.id;
   const classes = ["session-card"];
   if (active) classes.push("active");
@@ -90,20 +90,7 @@ export function sessionCard(s, active = false, { showCheckbox = false } = {}) {
     ? `<input type="checkbox" class="card-checkbox" data-id="${escapeHtml(s.id)}">`
     : "";
 
-  return `<article class="${classes.join(" ")}" data-session-id="${escapeHtml(s.id)}">
-    ${checkboxHtml}
-    <a href="/session/${encodeURIComponent(s.id)}" class="session-card-link">
-      <header class="session-card-header">
-        <h2 class="session-card-title">${escapeHtml(title)}</h2>
-        <time class="session-card-time" datetime="${new Date(Number(s.time_updated) || Date.now()).toISOString()}">${escapeHtml(formatTime(s.time_updated))}</time>
-      </header>
-      <p class="session-card-directory">${escapeHtml(s.directory || "")}</p>
-      <footer class="session-card-stats">
-        <span>${t("card.files").replace("{count}", formatCount(s.summary_files))}</span>
-        <span class="additions">+${formatCount(s.summary_additions)}</span>
-        <span class="deletions">-${formatCount(s.summary_deletions)}</span>
-      </footer>
-    </a>
+  const actionsHtml = provider === "opencode" ? `
     <div class="card-actions">
       <button class="star-btn ${s.starred ? "starred" : ""}" data-id="${escapeHtml(s.id)}" title="${t("batch.star")}">
         ${s.starred ? "★" : "☆"}
@@ -116,6 +103,23 @@ export function sessionCard(s, active = false, { showCheckbox = false } = {}) {
         <button data-action="delete" data-id="${escapeHtml(s.id)}" class="menu-danger">${t("menu.delete")}</button>
       </div>
     </div>
+  ` : "";
+
+  return `<article class="${classes.join(" ")}" data-session-id="${escapeHtml(s.id)}">
+    ${checkboxHtml}
+    <a href="/${provider}/session/${encodeURIComponent(s.id)}" class="session-card-link">
+      <header class="session-card-header">
+        <h2 class="session-card-title">${escapeHtml(title)}</h2>
+        <time class="session-card-time" datetime="${new Date(Number(s.time_updated) || Date.now()).toISOString()}">${escapeHtml(formatTime(s.time_updated))}</time>
+      </header>
+      <p class="session-card-directory">${escapeHtml(s.directory || "")}</p>
+      <footer class="session-card-stats">
+        <span>${t("card.files").replace("{count}", formatCount(s.summary_files))}</span>
+        <span class="additions">+${formatCount(s.summary_additions)}</span>
+        <span class="deletions">-${formatCount(s.summary_deletions)}</span>
+      </footer>
+    </a>
+    ${actionsHtml}
   </article>`;
 }
 

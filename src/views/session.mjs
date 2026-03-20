@@ -63,20 +63,20 @@ function renderPart(messageData, partData) {
   return "";
 }
 
-export function renderSessionPage({ session, messages = [], partsByMessage = new Map(), todos = [], recentSessions = [], meta = null }) {
+export function renderSessionPage({ session, messages = [], partsByMessage = new Map(), todos = [], recentSessions = [], meta = null, provider = "opencode", providers = [] }) {
   const title = session.title || session.slug || session.id;
   const starred = meta?.starred ? 1 : 0;
-  const actions = `
+  const actions = provider === "opencode" ? `
       <div class="session-actions">
         <button class="star-btn action-btn ${starred ? "starred" : ""}" data-id="${escapeHtml(session.id)}">
           ${starred ? t("action.starred") : t("action.star")}
         </button>
         <button class="action-btn" data-action="rename" data-id="${escapeHtml(session.id)}">${t("action.rename")}</button>
-        <a href="/api/session/${encodeURIComponent(session.id)}/export?format=md" class="action-btn">${t("action.export_md")}</a>
-        <a href="/api/session/${encodeURIComponent(session.id)}/export?format=json" class="action-btn">${t("action.export_json")}</a>
+        <a href="/api/${provider}/session/${encodeURIComponent(session.id)}/export?format=md" class="action-btn">${t("action.export_md")}</a>
+        <a href="/api/${provider}/session/${encodeURIComponent(session.id)}/export?format=json" class="action-btn">${t("action.export_json")}</a>
         <button class="action-btn btn-danger" data-action="delete" data-id="${escapeHtml(session.id)}">${t("action.delete")}</button>
       </div>
-  `;
+  ` : "";
   const header = `
     <header class="session-header">
       <h1>${escapeHtml(title)}</h1>
@@ -99,7 +99,7 @@ ${actions}
     return renderedParts ? `<article class="message-group">${renderedParts}</article>` : "";
   }).filter(Boolean).join("\n");
 
-  const sidebarCards = (recentSessions || []).map(s => sessionCard(s, s.id === session.id)).join("\n");
+  const sidebarCards = (recentSessions || []).map(s => sessionCard(s, s.id === session.id, { provider })).join("\n");
 
   const body = `
 <div class="two-column">
@@ -121,5 +121,5 @@ ${actions}
 </div>
   `;
 
-  return layout(title, body, "home");
+  return layout(title, body, "home", { provider, providers });
 }

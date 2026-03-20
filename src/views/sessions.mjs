@@ -12,10 +12,12 @@ export function renderSessionsPage({
   note = "",
   range = "",
   totalMessages = 0,
-  deletedCount = 0
+  deletedCount = 0,
+  provider = "opencode",
+  providers = []
 } = {}) {
   const cards = sessions.length
-    ? sessions.map((session) => sessionCard(session, false, { showCheckbox: true })).join("\n")
+    ? sessions.map((session) => sessionCard(session, false, { showCheckbox: true, provider })).join("\n")
     : query
       ? `<p class="empty-state">${t("sessions.empty_search").replace("{query}", escapeHtml(query))}</p>`
       : `<p class="empty-state">${t("sessions.empty")}</p>`;
@@ -32,7 +34,7 @@ export function renderSessionsPage({
   const rangeParam = range || "";
   const rangeButtons = ranges.map(r => {
     const active = r.key === rangeParam ? " active" : "";
-    const href = r.key ? `/?range=${r.key}` : "/";
+    const href = r.key ? `/${provider}?range=${r.key}` : `/${provider}`;
     return `<a href="${href}" class="range-btn${active}">${r.label}</a>`;
   }).join("");
   const filterBar = `<div class="range-filter">${rangeButtons}</div>`;
@@ -52,7 +54,7 @@ export function renderSessionsPage({
           <span class="dash-arrow">\u2192</span>
         </div>
       </a>
-      <a href="/stats" class="dash-card">
+      <a href="/${provider}/stats" class="dash-card">
         <div class="dash-card-header">
           <span class="dash-file">stats.json</span>
           <span class="dash-badge">api</span>
@@ -66,7 +68,8 @@ export function renderSessionsPage({
           <span class="dash-arrow">\u2192</span>
         </div>
       </a>
-      <a href="/trash" class="dash-card">
+      ${provider === "opencode" ? `
+      <a href="/${provider}/trash" class="dash-card">
         <div class="dash-card-header">
           <span class="dash-file">trash/</span>
           <span class="dash-badge">sys</span>
@@ -79,7 +82,7 @@ export function renderSessionsPage({
           <span class="dash-cmd">$ ls trash</span>
           <span class="dash-arrow">\u2192</span>
         </div>
-      </a>
+      </a>` : ""}
     </section>
   `;
   
@@ -91,11 +94,12 @@ export function renderSessionsPage({
           <h1>${query ? t("sessions.search_title").replace("{query}", escapeHtml(query)) : t("sessions.title")}</h1>
           <p>${t("sessions.count").replace("{count}", total)}</p>
         </div>
-        ${!query ? `<button class="btn btn-manage" id="toggle-batch">${t("sessions.manage")}</button>` : ""}
+        ${!query && provider === "opencode" ? `<button class="btn btn-manage" id="toggle-batch">${t("sessions.manage")}</button>` : ""}
       </div>
       ${searchNote}
       ${!query ? filterBar : ""}
     </section>
+    ${provider === "opencode" ? `
     <div class="batch-bar hidden" id="batch-bar">
       <label class="batch-select-all">
         <input type="checkbox" id="select-all"> ${t("batch.select_all")}
@@ -105,12 +109,12 @@ export function renderSessionsPage({
       <button class="btn batch-action" data-action="unstar">${t("batch.unstar")}</button>
       <button class="btn batch-action btn-danger" data-action="delete">${t("batch.delete")}</button>
       <button class="btn batch-action" id="batch-cancel">${t("batch.cancel")}</button>
-    </div>
+    </div>` : ""}
     <section class="session-list" id="session-list">
       ${cards}
     </section>
-    ${total > limit ? `<div id="scroll-sentinel" data-offset="${offset + sessions.length}" data-total="${total}" data-range="${escapeHtml(range)}" data-query="${escapeHtml(query)}"></div>` : ""}
+    ${total > limit ? `<div id="scroll-sentinel" data-offset="${offset + sessions.length}" data-total="${total}" data-range="${escapeHtml(range)}" data-query="${escapeHtml(query)}" data-provider="${provider}"></div>` : ""}
   `;
 
-  return layout(query ? t("sessions.search_title").replace("{query}", query) : t("sessions.title"), body, query ? "search" : "home");
+  return layout(query ? t("sessions.search_title").replace("{query}", query) : t("sessions.title"), body, query ? "search" : "home", { provider, providers });
 }
