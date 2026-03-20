@@ -1,10 +1,11 @@
 {
-  "name": "oh-my-opensession",
-  "version": "0.2.0",
-  "description": "A web-based session viewer and manager for OpenCode — browse, search, star, rename, delete, export your AI coding sessions.",
+  "name": "opensession",
+  "version": "1.0.0",
+  "description": "A web-based session viewer for AI coding tools — browse, search, and manage sessions from OpenCode, Claude Code, Codex CLI, and Gemini CLI.",
   "type": "module",
   "bin": {
-    "oh-my-opensession": "./bin/cli.mjs"
+    "opensession": "bin/cli.mjs",
+    "oh-my-opensession": "bin/cli.mjs"
   },
   "scripts": {
     "start": "node bin/cli.mjs",
@@ -14,7 +15,11 @@
     "node": ">=22.5.0"
   },
   "keywords": [
+    "opensession",
     "opencode",
+    "claude-code",
+    "codex",
+    "gemini",
     "session-viewer",
     "ai-coding",
     "session-manager",
@@ -24,7 +29,7 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/HeavyBunny19C/oh-my-opensession.git"
+    "url": "git+https://github.com/HeavyBunny19C/oh-my-opensession.git"
   },
   "homepage": "https://github.com/HeavyBunny19C/oh-my-opensession",
   "files": [

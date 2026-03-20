@@ -823,7 +823,7 @@ export async function startServer(config = getConfig()) {
     const stats = getStats();
     const server = createServer(requestHandler);
     server.listen(PORT, () => {
-      console.log(`oh-my-opensession running at http://localhost:${PORT}`);
+      console.log(`OpenSession running at http://localhost:${PORT}`);
       console.log(`Language: ${getLocale()}`);
       console.log(`DB: ${appConfig.dbPath}`);
       console.log(`${stats.totalSessions} sessions, ${stats.totalMessages} messages.`);

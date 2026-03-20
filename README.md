@@ -2,7 +2,7 @@
   <img src="./docs/preview-dashboard.png" alt="oh-my-opensession" width="720" />
 </p>
 
-<h1 align="center">✨ oh-my-opensession ✨</h1>
+<h1 align="center">✨ OpenSession ✨</h1>
 
 <p align="center">
   <strong>🖥️ 你和 AI 结对编程的「回忆录」—— 终端风格的 <a href="https://opencode.ai">OpenCode</a> 会话浏览器</strong>
@@ -77,35 +77,27 @@
 
 ---
 
-## 🚀 快速开始
+## 🚀 三秒启动
 
-### 方式一：从源码运行（推荐）
+```bash
+npx opensession
+```
+
+> 💡 打开 `http://localhost:3456`，开始考古你的 AI 编程之旅！
+
+想常驻？
+
+```bash
+npm install -g opensession
+opensession --open  # 自动弹浏览器，懒人福音
+```
+
+也可以从源码运行：
 
 ```bash
 git clone https://github.com/HeavyBunny19C/oh-my-opensession.git
 cd oh-my-opensession
 npm start
-```
-
-> 💡 打开 `http://localhost:3456`，开始考古你的 AI 编程之旅！
-
-想自动弹浏览器？
-
-```bash
-npm run dev  # 等于 npm start + --open
-```
-
-### 方式二：npx / 全局安装（npm 发布后可用）
-
-> ⚠️ **注意**：npm 包尚未发布，以下命令暂时无法使用。发布后即可一键启动：
-
-```bash
-# 临时运行（发布后可用）
-npx oh-my-opensession
-
-# 全局安装（发布后可用）
-npm install -g oh-my-opensession
-oh-my-opensession --open
 ```
 
 ---
@@ -161,7 +153,7 @@ oh-my-opensession --open
 |:---|:---|
 | `PORT` | 服务端口（`--port` 优先） |
 | `SESSION_VIEWER_DB_PATH` | opencode.db 路径（`--db` 优先） |
-| `OH_MY_OPENSESSION_META_PATH` | 元数据库路径 |
+| `OPENSESSION_META_PATH` | 元数据库路径 |
 
 ---
 
@@ -175,7 +167,7 @@ oh-my-opensession --open
                │ SELECT（绝不 INSERT/UPDATE）
                ▼
 ┌─────────────────────────────────────────┐
-│  oh-my-opensession                      │
+│  OpenSession                            │
 │  ├── 服务端渲染 HTML                     │
 │  ├── 无限滚动 API                        │
 │  └── 管理操作 → meta.db (独立存储)        │
@@ -191,8 +183,8 @@ oh-my-opensession --open
 你的 OpenCode 数据 **绝对安全**——我们只看不摸。收藏、重命名、删除等操作存在独立的 `meta.db` 里：
 
 ```
-macOS:   ~/.config/oh-my-opensession/meta.db
-Windows: %APPDATA%\oh-my-opensession\meta.db
+macOS:   ~/.config/opensession/meta.db
+Windows: %APPDATA%\opensession\meta.db
 ```
 
 ---
@@ -246,7 +238,7 @@ npm start
 看到类似这样的输出就是成功了：
 
 ```
-oh-my-opensession running at http://localhost:3456
+OpenSession running at http://localhost:3456
 Language: en
 DB: /Users/xxx/.local/share/opencode/opencode.db
 42 sessions, 1337 messages.
@@ -284,7 +276,7 @@ npm run dev
 - **Runtime**: Node.js >= 22.5.0（依赖内置 `node:sqlite` 模块）
 - **Dependencies**: 零，无需 `npm install`
 - **Source**: `https://github.com/HeavyBunny19C/oh-my-opensession.git`
-- **npm status**: 尚未发布到 npm，`npx oh-my-opensession` 暂不可用
+- **npm**: 已发布，`npx oh-my-opensession` 可直接使用
 - **Default port**: 3456
 - **OpenCode DB location**:
   - macOS / Linux: `~/.local/share/opencode/opencode.db`（遵循 XDG，受 `$XDG_DATA_HOME` 影响）
@@ -304,10 +296,10 @@ STEP 2: Clone repository
   RUN: cd oh-my-opensession
 
 STEP 3: Start server
-  RUN: npm start
-  OR:  node bin/cli.mjs [options]
-  EXPECT OUTPUT: "oh-my-opensession running at http://localhost:3456"
-  ON SUCCESS: Open http://localhost:3456 in browser
+   RUN: npm start
+   OR:  node bin/cli.mjs [options]
+   EXPECT OUTPUT: "OpenSession running at http://localhost:3456"
+   ON SUCCESS: Open http://localhost:3456 in browser
 
 STEP 4 (optional): Custom options
   RUN: node bin/cli.mjs --port <PORT> --db <PATH> --lang <en|zh> --open
@@ -337,7 +329,7 @@ ERROR: "0 sessions, 0 messages"
 ### KEY FACTS FOR AI AGENTS
 
 - **Read-only**: 绝不修改 OpenCode 数据库，只做 SELECT 查询
-- **Meta storage**: 收藏/重命名/删除等操作存储在独立的 `meta.db`（macOS: `~/.config/oh-my-opensession/meta.db`）
+- **Meta storage**: 收藏/重命名/删除等操作存储在独立的 `meta.db`（macOS: `~/.config/opensession/meta.db`）
 - **Zero install**: 克隆即跑，不需要 `npm install`（零依赖项目）
 - **ESM only**: 项目使用 ES Modules（`"type": "module"`），入口是 `bin/cli.mjs`
 - **No build step**: 无编译、无打包，纯原生 JavaScript

@@ -2,7 +2,7 @@
   <img src="./docs/preview-dashboard.png" alt="oh-my-opensession" width="720" />
 </p>
 
-<h1 align="center">✨ oh-my-opensession ✨</h1>
+<h1 align="center">✨ OpenSession ✨</h1>
 
 <p align="center">
   <strong>🖥️ Your AI pair-programming "memoir" — a terminal-styled <a href="https://opencode.ai">OpenCode</a> session browser</strong>
@@ -77,35 +77,27 @@ Ever caught yourself thinking—
 
 ---
 
-## 🚀 Quick Start
+## 🚀 3-Second Launch
 
-### Option 1: Run from Source (Recommended)
+```bash
+npx opensession
+```
+
+> 💡 Open `http://localhost:3456` and start archaeologizing your AI coding journey!
+
+Want it permanent?
+
+```bash
+npm install -g opensession
+opensession --open  # auto-opens browser, for the lazy among us
+```
+
+Or run from source:
 
 ```bash
 git clone https://github.com/HeavyBunny19C/oh-my-opensession.git
 cd oh-my-opensession
 npm start
-```
-
-> 💡 Open `http://localhost:3456` and start archaeologizing your AI coding journey!
-
-Want auto-open browser?
-
-```bash
-npm run dev  # same as npm start + --open
-```
-
-### Option 2: npx / Global Install (after npm publish)
-
-> ⚠️ **Note**: The npm package is not yet published. The commands below will work once it's live:
-
-```bash
-# One-off run (available after publish)
-npx oh-my-opensession
-
-# Global install (available after publish)
-npm install -g oh-my-opensession
-oh-my-opensession --open
 ```
 
 ---
@@ -161,7 +153,7 @@ Option                  Description                   Default
 |:---|:---|
 | `PORT` | Server port (`--port` takes priority) |
 | `SESSION_VIEWER_DB_PATH` | Path to opencode.db (`--db` takes priority) |
-| `OH_MY_OPENSESSION_META_PATH` | Metadata DB path |
+| `OPENSESSION_META_PATH` | Metadata DB path |
 
 ---
 
@@ -175,7 +167,7 @@ Option                  Description                   Default
                │ SELECT (never INSERT/UPDATE)
                ▼
 ┌─────────────────────────────────────────┐
-│  oh-my-opensession                      │
+│  OpenSession                            │
 │  ├── Server-side rendered HTML          │
 │  ├── Infinite scroll API                │
 │  └── Management ops → meta.db (separate)│
@@ -191,8 +183,8 @@ Option                  Description                   Default
 Your OpenCode data is **absolutely safe** — we look but don't touch. Stars, renames, and deletes live in a separate `meta.db`:
 
 ```
-macOS:   ~/.config/oh-my-opensession/meta.db
-Windows: %APPDATA%\oh-my-opensession\meta.db
+macOS:   ~/.config/opensession/meta.db
+Windows: %APPDATA%\opensession\meta.db
 ```
 
 ---
@@ -246,7 +238,7 @@ npm start
 You should see something like:
 
 ```
-oh-my-opensession running at http://localhost:3456
+OpenSession running at http://localhost:3456
 Language: en
 DB: /Users/xxx/.local/share/opencode/opencode.db
 42 sessions, 1337 messages.
@@ -284,7 +276,7 @@ npm run dev
 - **Runtime**: Node.js >= 22.5.0 (depends on built-in `node:sqlite` module)
 - **Dependencies**: Zero — no `npm install` needed
 - **Source**: `https://github.com/HeavyBunny19C/oh-my-opensession.git`
-- **npm status**: NOT yet published to npm. `npx oh-my-opensession` does NOT work.
+- **npm**: Published. `npx oh-my-opensession` works out of the box.
 - **Default port**: 3456
 - **OpenCode DB location**:
   - macOS / Linux: `~/.local/share/opencode/opencode.db` (XDG-compliant, respects `$XDG_DATA_HOME`)
@@ -304,10 +296,10 @@ STEP 2: Clone repository
   RUN: cd oh-my-opensession
 
 STEP 3: Start server
-  RUN: npm start
-  OR:  node bin/cli.mjs [options]
-  EXPECT OUTPUT: "oh-my-opensession running at http://localhost:3456"
-  ON SUCCESS: Open http://localhost:3456 in browser
+   RUN: npm start
+   OR:  node bin/cli.mjs [options]
+   EXPECT OUTPUT: "OpenSession running at http://localhost:3456"
+   ON SUCCESS: Open http://localhost:3456 in browser
 
 STEP 4 (optional): Custom options
   RUN: node bin/cli.mjs --port <PORT> --db <PATH> --lang <en|zh> --open
@@ -337,7 +329,7 @@ ERROR: "0 sessions, 0 messages"
 ### KEY FACTS FOR AI AGENTS
 
 - **Read-only**: Never modifies the OpenCode database — SELECT queries only
-- **Meta storage**: Stars/renames/deletes are stored in a separate `meta.db` (macOS: `~/.config/oh-my-opensession/meta.db`)
+- **Meta storage**: Stars/renames/deletes are stored in a separate `meta.db` (macOS: `~/.config/opensession/meta.db`)
 - **Zero install**: Clone and run — no `npm install` required (zero-dependency project)
 - **ESM only**: Uses ES Modules (`"type": "module"`), entry point is `bin/cli.mjs`
 - **No build step**: No compilation, no bundling — plain JavaScript
