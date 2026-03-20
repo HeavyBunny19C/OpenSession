@@ -1,4 +1,5 @@
 // src/providers/index.mjs
+import opencode from "./opencode/adapter.mjs";
 
 /** @type {import('./interface.mjs').ProviderAdapter[]} */
 const ALL_PROVIDERS = [];
@@ -35,3 +36,6 @@ export function getProvider(id) {
 export function getAllProviders() {
   return [...ALL_PROVIDERS];
 }
+
+// --- Provider registration (MUST be after ALL_PROVIDERS declaration) ---
+registerProvider(opencode);
