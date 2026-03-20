@@ -1,4 +1,5 @@
 const __LOCALE__ = window.__LOCALE__ || "en";
+const PROVIDER = document.body.dataset.provider || "opencode";
 const __I18N__ = {
   en: {
     rename_prompt: "Enter new title:",
@@ -145,7 +146,7 @@ document.addEventListener("click", async (e) => {
   const id = btn.dataset.id;
   if (!id) return;
   try {
-    const res = await fetch(`/api/session/${encodeURIComponent(id)}/star`, { method: "POST" });
+    const res = await fetch(`/api/${PROVIDER}/session/${encodeURIComponent(id)}/star`, { method: "POST" });
     const data = await res.json();
     btn.classList.toggle("starred", data.starred);
     if (!btn.textContent.includes(ft("star_check"))) {
@@ -199,7 +200,7 @@ document.addEventListener("click", async (e) => {
     const newTitle = prompt(ft("rename_prompt"), current);
     if (newTitle === null) return;
     try {
-      await fetch(`/api/session/${encodeURIComponent(id)}/rename`, {
+      await fetch(`/api/${PROVIDER}/session/${encodeURIComponent(id)}/rename`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ title: newTitle })
@@ -215,10 +216,10 @@ document.addEventListener("click", async (e) => {
   if (action === "delete") {
     if (!confirm(ft("delete_confirm"))) return;
     try {
-      await fetch(`/api/session/${encodeURIComponent(id)}/delete`, { method: "POST" });
+      await fetch(`/api/${PROVIDER}/session/${encodeURIComponent(id)}/delete`, { method: "POST" });
       queueToast(ft("toast_deleted"), "success");
       if (document.querySelector(".session-actions")) {
-        location.href = "/";
+        location.href = `/${PROVIDER}`;
       } else {
         location.reload();
       }
@@ -230,7 +231,7 @@ document.addEventListener("click", async (e) => {
 
   if (action === "restore") {
     try {
-      await fetch(`/api/session/${encodeURIComponent(id)}/restore`, { method: "POST" });
+      await fetch(`/api/${PROVIDER}/session/${encodeURIComponent(id)}/restore`, { method: "POST" });
       queueToast(ft("toast_restored"), "success");
       location.reload();
     } catch {
@@ -242,7 +243,7 @@ document.addEventListener("click", async (e) => {
   if (action === "permanent-delete") {
     if (!confirm(ft("permanent_delete_confirm"))) return;
     try {
-      await fetch(`/api/session/${encodeURIComponent(id)}/permanent-delete`, { method: "POST" });
+      await fetch(`/api/${PROVIDER}/session/${encodeURIComponent(id)}/permanent-delete`, { method: "POST" });
       queueToast(ft("toast_permanent_deleted"), "success");
       location.reload();
     } catch {
@@ -252,12 +253,12 @@ document.addEventListener("click", async (e) => {
   }
 
   if (action === "export-md") {
-    window.open(`/api/session/${encodeURIComponent(id)}/export?format=md`, "_blank");
+    window.open(`/api/${PROVIDER}/session/${encodeURIComponent(id)}/export?format=md`, "_blank");
     return;
   }
 
   if (action === "export-json") {
-    window.open(`/api/session/${encodeURIComponent(id)}/export?format=json`, "_blank");
+    window.open(`/api/${PROVIDER}/session/${encodeURIComponent(id)}/export?format=json`, "_blank");
   }
 });
 
@@ -324,7 +325,7 @@ document.addEventListener("click", async (e) => {
   if (action === "delete" && !confirm(ft("batch_delete_confirm").replace("{count}", ids.length))) return;
 
   try {
-    await fetch("/api/batch", {
+    await fetch(`/api/${PROVIDER}/batch`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ action, ids })
@@ -364,20 +365,7 @@ function renderSessionCard(s) {
   const classes = ["session-card"];
   if (s.starred) classes.push("starred");
 
-  return `<article class="${classes.join(" ")}" data-session-id="${id}">
-    <input type="checkbox" class="card-checkbox" data-id="${id}">
-    <a href="/session/${encodeURIComponent(s.id)}" class="session-card-link">
-      <header class="session-card-header">
-        <h2 class="session-card-title">${title}</h2>
-        <time class="session-card-time" datetime="${new Date(timeUpdated).toISOString()}">${escapeHtmlClient(formatTimeClient(timeUpdated))}</time>
-      </header>
-      <p class="session-card-directory">${directory}</p>
-      <footer class="session-card-stats">
-        <span>${ft("card_files").replace("{count}", String(Number(s.summary_files) || 0))}</span>
-        <span class="additions">+${Number(s.summary_additions) || 0}</span>
-        <span class="deletions">-${Number(s.summary_deletions) || 0}</span>
-      </footer>
-    </a>
+  const actionsHtml = PROVIDER === "opencode" ? `
     <div class="card-actions">
       <button class="star-btn ${s.starred ? "starred" : ""}" data-id="${id}" title="${ft("star_check")}">
         ${s.starred ? "★" : "☆"}
@@ -390,6 +378,23 @@ function renderSessionCard(s) {
         <button data-action="delete" data-id="${id}" class="menu-danger">${ft("menu_delete")}</button>
       </div>
     </div>
+  ` : "";
+
+  return `<article class="${classes.join(" ")}" data-session-id="${id}">
+    <input type="checkbox" class="card-checkbox" data-id="${id}">
+    <a href="/${PROVIDER}/session/${encodeURIComponent(s.id)}" class="session-card-link">
+      <header class="session-card-header">
+        <h2 class="session-card-title">${title}</h2>
+        <time class="session-card-time" datetime="${new Date(timeUpdated).toISOString()}">${escapeHtmlClient(formatTimeClient(timeUpdated))}</time>
+      </header>
+      <p class="session-card-directory">${directory}</p>
+      <footer class="session-card-stats">
+        <span>${ft("card_files").replace("{count}", String(Number(s.summary_files) || 0))}</span>
+        <span class="additions">+${Number(s.summary_additions) || 0}</span>
+        <span class="deletions">-${Number(s.summary_deletions) || 0}</span>
+      </footer>
+    </a>
+    ${actionsHtml}
   </article>`;
 }
 
@@ -423,7 +428,7 @@ if (scrollSentinel && sessionList && "IntersectionObserver" in window) {
       if (scrollRange) params.set("range", scrollRange);
       if (scrollQuery) params.set("q", scrollQuery);
 
-      const res = await fetch(`/api/sessions?${params.toString()}`);
+      const res = await fetch(`/api/${PROVIDER}/sessions?${params.toString()}`);
       if (!res.ok) {
         throw new Error(`HTTP ${res.status}`);
       }
