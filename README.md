@@ -77,35 +77,27 @@
 
 ---
 
-## 🚀 快速开始
+## 🚀 三秒启动
 
-### 方式一：从源码运行（推荐）
+```bash
+npx oh-my-opensession
+```
+
+> 💡 打开 `http://localhost:3456`，开始考古你的 AI 编程之旅！
+
+想常驻？
+
+```bash
+npm install -g oh-my-opensession
+oh-my-opensession --open  # 自动弹浏览器，懒人福音
+```
+
+也可以从源码运行：
 
 ```bash
 git clone https://github.com/HeavyBunny19C/oh-my-opensession.git
 cd oh-my-opensession
 npm start
-```
-
-> 💡 打开 `http://localhost:3456`，开始考古你的 AI 编程之旅！
-
-想自动弹浏览器？
-
-```bash
-npm run dev  # 等于 npm start + --open
-```
-
-### 方式二：npx / 全局安装（npm 发布后可用）
-
-> ⚠️ **注意**：npm 包尚未发布，以下命令暂时无法使用。发布后即可一键启动：
-
-```bash
-# 临时运行（发布后可用）
-npx oh-my-opensession
-
-# 全局安装（发布后可用）
-npm install -g oh-my-opensession
-oh-my-opensession --open
 ```
 
 ---
@@ -284,7 +276,7 @@ npm run dev
 - **Runtime**: Node.js >= 22.5.0（依赖内置 `node:sqlite` 模块）
 - **Dependencies**: 零，无需 `npm install`
 - **Source**: `https://github.com/HeavyBunny19C/oh-my-opensession.git`
-- **npm status**: 尚未发布到 npm，`npx oh-my-opensession` 暂不可用
+- **npm**: 已发布，`npx oh-my-opensession` 可直接使用
 - **Default port**: 3456
 - **OpenCode DB location**:
   - macOS / Linux: `~/.local/share/opencode/opencode.db`（遵循 XDG，受 `$XDG_DATA_HOME` 影响）
