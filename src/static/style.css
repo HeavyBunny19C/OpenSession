@@ -1367,3 +1367,34 @@ pre code.hljs {
   font-size: 14px;
   padding: 16px 0;
 }
+
+@media (max-width: 768px) {
+  .topbar {
+    padding: 0 12px;
+    gap: 2px;
+  }
+  .provider-tab .provider-name {
+    display: none;
+  }
+  .provider-tab {
+    padding: 13px 10px;
+  }
+  .search-input {
+    width: 120px;
+  }
+  .logo-text {
+    display: none;
+  }
+  .topbar-actions {
+    gap: 8px;
+  }
+}
+
+@media (max-width: 480px) {
+  .topbar-actions .nav-link {
+    display: none;
+  }
+  .search-input {
+    width: 80px;
+  }
+}

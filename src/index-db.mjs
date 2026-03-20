@@ -101,3 +101,16 @@ export function getLastIndexedTime(provider) {
   const row = db.prepare("SELECT MAX(last_indexed) as t FROM session_index WHERE provider = ?").get(provider);
   return row?.t || 0;
 }
+
+/**
+ * Clear indexed sessions for a provider (or all providers).
+ * @param {string} [provider]
+ */
+export function clearIndex(provider) {
+  const db = getIndexDb();
+  if (provider) {
+    db.prepare("DELETE FROM session_index WHERE provider = ?").run(provider);
+  } else {
+    db.exec("DELETE FROM session_index");
+  }
+}

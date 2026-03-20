@@ -108,17 +108,6 @@ function queueToast(message, type = "success") {
   sessionStorage.setItem("pendingToast", JSON.stringify({ message, type }));
 }
 
-document.addEventListener("click", (e) => {
-  const header = e.target.closest(".expandable");
-  if (!header) return;
-  const detail = header.nextElementSibling;
-  if (detail) {
-    detail.classList.toggle("hidden");
-    const arrow = header.querySelector(".expand-arrow");
-    if (arrow) arrow.textContent = detail.classList.contains("hidden") ? "▸" : "▾";
-  }
-});
-
 document.addEventListener("keydown", (e) => {
   if (e.key === "/" && document.activeElement.tagName !== "INPUT") {
     e.preventDefault();

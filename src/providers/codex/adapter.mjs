@@ -126,7 +126,7 @@ const codex = {
     return results;
   },
 
-  exportSession() { return null; }
+  exportSession(_sessionId) { return null; }
 };
 
 export default codex;

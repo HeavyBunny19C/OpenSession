@@ -13,28 +13,34 @@ export function getMetaDb() {
     const hasProvider = tableInfo.some((col) => col.name === "provider");
 
     if (!hasProvider && tableInfo.length > 0) {
-      // Existing table without provider — migrate
-      metaDb.exec(`
-        CREATE TABLE session_meta_v2 (
-          provider TEXT NOT NULL DEFAULT 'opencode',
-          session_id TEXT NOT NULL,
-          custom_title TEXT,
-          starred INTEGER DEFAULT 0,
-          deleted INTEGER DEFAULT 0,
-          permanent INTEGER DEFAULT 0,
-          time_starred INTEGER,
-          time_deleted INTEGER,
-          time_renamed INTEGER,
-          PRIMARY KEY (provider, session_id)
-        )
-      `);
-      metaDb.exec(`
-        INSERT INTO session_meta_v2 (provider, session_id, custom_title, starred, deleted, permanent, time_starred, time_deleted, time_renamed)
-        SELECT 'opencode', session_id, custom_title, starred, deleted, permanent, time_starred, time_deleted, time_renamed
-        FROM session_meta
-      `);
-      metaDb.exec("DROP TABLE session_meta");
-      metaDb.exec("ALTER TABLE session_meta_v2 RENAME TO session_meta");
+      metaDb.exec("BEGIN TRANSACTION");
+      try {
+        metaDb.exec(`
+          CREATE TABLE session_meta_v2 (
+            provider TEXT NOT NULL DEFAULT 'opencode',
+            session_id TEXT NOT NULL,
+            custom_title TEXT,
+            starred INTEGER DEFAULT 0,
+            deleted INTEGER DEFAULT 0,
+            permanent INTEGER DEFAULT 0,
+            time_starred INTEGER,
+            time_deleted INTEGER,
+            time_renamed INTEGER,
+            PRIMARY KEY (provider, session_id)
+          )
+        `);
+        metaDb.exec(`
+          INSERT INTO session_meta_v2 (provider, session_id, custom_title, starred, deleted, permanent, time_starred, time_deleted, time_renamed)
+          SELECT 'opencode', session_id, custom_title, starred, deleted, permanent, time_starred, time_deleted, time_renamed
+          FROM session_meta
+        `);
+        metaDb.exec("DROP TABLE session_meta");
+        metaDb.exec("ALTER TABLE session_meta_v2 RENAME TO session_meta");
+        metaDb.exec("COMMIT");
+      } catch (err) {
+        metaDb.exec("ROLLBACK");
+        throw err;
+      }
     } else if (tableInfo.length === 0) {
       // Fresh install
       metaDb.exec(`
