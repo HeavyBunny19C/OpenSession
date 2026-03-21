@@ -434,19 +434,32 @@ body::before {
 
 /* Session Detail */
 .session-header {
-  margin-bottom: 32px;
+  margin-bottom: 16px;
 }
 
 .session-header h1 {
-  font-size: 28px;
+  font-size: 22px;
   font-weight: 700;
+  margin-bottom: 4px;
+}
+
+.session-meta-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: var(--text-secondary);
+  flex-wrap: wrap;
   margin-bottom: 8px;
 }
 
+.session-meta-sep {
+  color: var(--text-muted);
+}
+
 .session-directory {
-  font-size: 14px;
+  font-size: 12px;
   color: var(--text-secondary);
-  margin-bottom: 24px;
 }
 
 .session-summary {
@@ -1071,11 +1084,11 @@ pre code.hljs {
 }
 
 .two-column.trace-open {
-  grid-template-columns: 1fr 420px;
+  grid-template-columns: 1fr 1fr;
 }
 
 .main-content {
-  padding: 24px;
+  padding: 16px;
   overflow-y: auto;
 }
 

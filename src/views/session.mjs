@@ -81,14 +81,15 @@ export function renderSessionPage({ session, messages = [], partsByMessage = new
   const header = `
     <header class="session-header">
       <h1>${escapeHtml(title)}</h1>
-      <p class="session-directory">${escapeHtml(session.directory || "")}</p>
-      <dl class="session-summary">
-         <div><dt>${t("detail.created")}</dt><dd>${escapeHtml(new Date(Number(session.time_created) || Date.now()).toLocaleString())}</dd></div>
-         <div><dt>${t("detail.updated")}</dt><dd>${escapeHtml(new Date(Number(session.time_updated) || Date.now()).toLocaleString())}</dd></div>
-         <div><dt>${t("detail.files")}</dt><dd>${escapeHtml(String(Number(session.summary_files) || 0))}</dd></div>
-         <div><dt>${t("detail.additions")}</dt><dd>+${escapeHtml(String(Number(session.summary_additions) || 0))}</dd></div>
-         <div><dt>${t("detail.deletions")}</dt><dd>-${escapeHtml(String(Number(session.summary_deletions) || 0))}</dd></div>
-      </dl>
+      <div class="session-meta-row">
+        <span class="session-directory">${escapeHtml(session.directory || "")}</span>
+        <span class="session-meta-sep">·</span>
+        <span>${escapeHtml(new Date(Number(session.time_created) || Date.now()).toLocaleString())}</span>
+        <span class="session-meta-sep">·</span>
+        <span>${escapeHtml(String(Number(session.summary_files) || 0))} ${t("detail.files")}</span>
+        <span class="additions">+${escapeHtml(String(Number(session.summary_additions) || 0))}</span>
+        <span class="deletions">-${escapeHtml(String(Number(session.summary_deletions) || 0))}</span>
+      </div>
 ${actions}
     </header>
   `;
