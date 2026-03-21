@@ -63,9 +63,14 @@ export const en = {
 
   // Stats
   "stats.title": "Statistics Overview",
+  "stats.desc": "Visualize token usage over time. Track consumption trends, discover usage patterns.",
+  "stats.about_title": "About This Dashboard",
+  "stats.about_desc": "This dashboard shows token consumption and session activity over the last 30 days. Data is sourced from your local session database.",
   "stats.total_sessions": "Total Sessions",
   "stats.total_messages": "Total Messages",
   "stats.token_usage": "Token Usage",
+  "stats.avg_daily": "Avg Daily",
+  "stats.peak_day": "Peak Day",
   "stats.token_trend": "Token Usage Trend",
   "stats.model_distribution": "Model Distribution",
   "stats.daily_sessions": "Daily Sessions",

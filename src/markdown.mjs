@@ -79,7 +79,13 @@ function inlineFormat(text) {
   result = result.replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>");
   result = result.replace(/\*(.+?)\*/g, "<em>$1</em>");
   result = result.replace(/`([^`]+)`/g, "<code>$1</code>");
-  result = result.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" rel="noopener">$1</a>');
+  result = result.replace(/\[([^\]]+)\]\(([^)]+)\)/g, (_, label, url) => {
+    const decoded = url.replace(/&amp;/g, "&").replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&quot;/g, '"');
+    if (/^(https?:|mailto:|\/|#)/.test(decoded)) {
+      return `<a href="${url}" target="_blank" rel="noopener">${label}</a>`;
+    }
+    return `${label} (${url})`;
+  });
   return result;
 }
 

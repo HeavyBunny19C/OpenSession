@@ -63,9 +63,14 @@ export const zh = {
 
   // Stats
   "stats.title": "统计概览",
+  "stats.desc": "可视化 Token 消耗随时间的变化。追踪使用趋势，发现消耗模式。",
+  "stats.about_title": "关于此面板",
+  "stats.about_desc": "此面板展示最近 30 天的 Token 消耗和会话活动数据，数据来源于本地会话数据库。",
   "stats.total_sessions": "总会话数",
   "stats.total_messages": "总消息数",
   "stats.token_usage": "Token 消耗",
+  "stats.avg_daily": "日均消耗",
+  "stats.peak_day": "峰值日",
   "stats.token_trend": "Token 消耗趋势",
   "stats.model_distribution": "模型使用分布",
   "stats.daily_sessions": "每日会话数",
