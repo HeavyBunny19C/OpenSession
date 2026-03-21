@@ -133,8 +133,9 @@ const opencode = {
   },
 
   getTrace(sessionId) {
+    const MAX_STEPS = 200;
     const messages = dbGetMessages(sessionId);
-    const steps = [];
+    let steps = [];
 
     const knownBuiltins = new Set([
       "ast_grep_search",
@@ -265,24 +266,27 @@ const opencode = {
       }
     }
 
-    if (currentStep) {
-      currentStep.duration = currentStep.spans.reduce((sum, span) => sum + toNumber(span.duration), 0);
-      steps.push(currentStep);
-    }
+     if (currentStep) {
+       currentStep.duration = currentStep.spans.reduce((sum, span) => sum + toNumber(span.duration), 0);
+       steps.push(currentStep);
+     }
 
-    const summary = steps.reduce(
-      (acc, step) => {
-        acc.totalSteps += 1;
-        acc.totalSpans += step.spans.length;
-        acc.totalDuration += toNumber(step.duration);
-        acc.totalCost += toNumber(step.cost);
-        acc.totalTokens += toNumber(step.tokens);
-        return acc;
-      },
-      { totalSteps: 0, totalSpans: 0, totalDuration: 0, totalCost: 0, totalTokens: 0 }
-    );
+     const truncated = steps.length > MAX_STEPS;
+     steps = steps.slice(0, MAX_STEPS);
 
-    return { sessionId, steps, summary };
+     const summary = steps.reduce(
+       (acc, step) => {
+         acc.totalSteps += 1;
+         acc.totalSpans += step.spans.length;
+         acc.totalDuration += toNumber(step.duration);
+         acc.totalCost += toNumber(step.cost);
+         acc.totalTokens += toNumber(step.tokens);
+         return acc;
+       },
+       { totalSteps: 0, totalSpans: 0, totalDuration: 0, totalCost: 0, totalTokens: 0 }
+     );
+
+     return { sessionId, steps, summary, truncated };
   },
 
   exportSession(_sessionId) {
