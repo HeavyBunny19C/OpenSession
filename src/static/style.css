@@ -1070,6 +1070,10 @@ pre code.hljs {
   min-height: calc(100vh - 48px);
 }
 
+.two-column.trace-open {
+  grid-template-columns: 1fr 420px;
+}
+
 .main-content {
   padding: 24px;
   overflow-y: auto;
@@ -1434,23 +1438,18 @@ pre code.hljs {
 
 /* Trace Panel */
 .trace-panel {
-  position: fixed;
-  top: 48px;
-  right: 0;
-  width: 420px;
-  height: calc(100vh - 48px);
-  background: var(--bg-secondary);
-  border-left: 2px solid var(--accent-color);
-  transform: translateX(100%);
-  transition: transform 0.3s ease;
-  z-index: 98;
-  display: flex;
+  display: none;
   flex-direction: column;
   overflow: hidden;
+  background: var(--bg-secondary);
+  border-left: 2px solid var(--accent-color);
+  height: calc(100vh - 48px);
+  position: sticky;
+  top: 48px;
 }
 
 .trace-panel.open {
-  transform: translateX(0);
+  display: flex;
 }
 
 .trace-panel-header {
@@ -1743,7 +1742,14 @@ pre code.hljs {
 }
 
 @media (max-width: 768px) {
-  .trace-panel {
+  .two-column.trace-open {
+    grid-template-columns: 1fr;
+  }
+  .trace-panel.open {
+    position: fixed;
+    top: 48px;
+    right: 0;
     width: 100%;
+    z-index: 98;
   }
 }

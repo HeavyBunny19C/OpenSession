@@ -519,19 +519,23 @@ async function openTracePanel(partId) {
 
     renderTimeline();
     panelEl.classList.add("open");
+    layoutEl.classList.add("trace-open");
     updateTraceTitle();
   } catch {
     traceData = { steps: [], summary: null };
     currentStepIndex = 0;
     renderTimeline();
     panelEl.classList.add("open");
+    layoutEl.classList.add("trace-open");
     updateTraceTitle();
   }
 }
 
 function closeTracePanel() {
+  const layoutEl = document.querySelector(".two-column");
   const panelEl = document.getElementById("trace-panel");
   panelEl?.classList.remove("open");
+  layoutEl?.classList.remove("trace-open");
 }
 
 function renderTimeline() {
