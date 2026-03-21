@@ -519,23 +519,19 @@ async function openTracePanel(partId) {
 
     renderTimeline();
     panelEl.classList.add("open");
-    layoutEl.classList.add("trace-open");
     updateTraceTitle();
   } catch {
     traceData = { steps: [], summary: null };
     currentStepIndex = 0;
     renderTimeline();
     panelEl.classList.add("open");
-    layoutEl.classList.add("trace-open");
     updateTraceTitle();
   }
 }
 
 function closeTracePanel() {
-  const layoutEl = document.querySelector(".two-column");
   const panelEl = document.getElementById("trace-panel");
   panelEl?.classList.remove("open");
-  layoutEl?.classList.remove("trace-open");
 }
 
 function renderTimeline() {
@@ -679,3 +675,12 @@ document.addEventListener("click", (e) => {
   if (!closeBtn) return;
   closeTracePanel();
 });
+
+(function autoOpenTrace() {
+  const layoutEl = document.querySelector(".two-column[data-session-id][data-provider]");
+  if (!layoutEl) return;
+  const provider = layoutEl.dataset.provider || "";
+  const sessionId = layoutEl.dataset.sessionId || "";
+  if (provider !== "opencode" || !sessionId) return;
+  openTracePanel(null);
+})();

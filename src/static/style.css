@@ -1453,10 +1453,6 @@ pre code.hljs {
   transform: translateX(0);
 }
 
-.two-column.trace-open .main-content {
-  margin-right: 420px;
-}
-
 .trace-panel-header {
   display: flex;
   align-items: center;
@@ -1749,8 +1745,5 @@ pre code.hljs {
 @media (max-width: 768px) {
   .trace-panel {
     width: 100%;
-  }
-  .two-column.trace-open .main-content {
-    margin-right: 0;
   }
 }
