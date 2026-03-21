@@ -61,10 +61,17 @@ function send(res, status, body, contentType = "text/html; charset=utf-8") {
   res.end(injectLocaleScript(body, contentType));
 }
 
-function readBody(req) {
+function readBody(req, maxBytes = 1024 * 1024) {
   return new Promise((resolve, reject) => {
     let data = "";
+    let size = 0;
     req.on("data", (chunk) => {
+      size += chunk.length;
+      if (size > maxBytes) {
+        req.destroy();
+        resolve({});
+        return;
+      }
       data += chunk;
     });
     req.on("end", () => {
@@ -76,6 +83,21 @@ function readBody(req) {
     });
     req.on("error", reject);
   });
+}
+
+function safeDecodeId(encoded) {
+  try {
+    const decoded = decodeURIComponent(encoded);
+    if (decoded.length > 500) return null;
+    return decoded;
+  } catch {
+    return null;
+  }
+}
+
+function safeError(err) {
+  console.error("Request error:", err?.message || err);
+  return "Internal server error";
 }
 
 function json(res, data, status = 200) {
@@ -377,8 +399,14 @@ export async function startServer(config = getConfig()) {
         return json(res, { ok: false, error: "Not supported for this provider" }, 501);
       }
 
-      const id = decodeURIComponent(prefixedMutationMatch?.[2] || legacyMutationMatch[1]);
+      const rawId = prefixedMutationMatch?.[2] || legacyMutationMatch[1];
+      const id = safeDecodeId(rawId);
+      if (!id) return json(res, { ok: false, error: "Invalid session ID" }, 400);
       const action = prefixedMutationMatch?.[3] || legacyMutationMatch[2];
+      const adapter = providerMap.get("opencode");
+      if (adapter && !adapter.getSession(id)) {
+        return json(res, { ok: false, error: "Session not found" }, 404);
+      }
       try {
         if (action === "star") {
           const starred = toggleStar(id);
@@ -402,7 +430,8 @@ export async function startServer(config = getConfig()) {
           return json(res, { ok: true });
         }
       } catch (error) {
-        return json(res, { ok: false, error: error.message }, 500);
+        console.error("Mutation error:", error?.message || error);
+        return json(res, { ok: false, error: "Internal server error" }, 500);
       }
     }
 
@@ -423,7 +452,8 @@ export async function startServer(config = getConfig()) {
         const affected = batchAction(ids, body.action);
         return json(res, { ok: true, affected });
       } catch (error) {
-        return json(res, { ok: false, error: error.message }, 500);
+        console.error("Mutation error:", error?.message || error);
+        return json(res, { ok: false, error: "Internal server error" }, 500);
       }
     }
 
@@ -442,7 +472,8 @@ export async function startServer(config = getConfig()) {
         }
         return json(res, { ok: true, results });
       } catch (error) {
-        return json(res, { ok: false, error: error.message }, 500);
+        console.error("Mutation error:", error?.message || error);
+        return json(res, { ok: false, error: "Internal server error" }, 500);
       }
     }
 
@@ -903,7 +934,7 @@ export async function startServer(config = getConfig()) {
 
     const stats = getStats();
     const server = createServer(requestHandler);
-    server.listen(PORT, () => {
+    server.listen(PORT, "127.0.0.1", () => {
       console.log(`OpenSession running at http://localhost:${PORT}`);
       console.log(`Language: ${getLocale()}`);
       console.log(`DB: ${appConfig.dbPath}`);
