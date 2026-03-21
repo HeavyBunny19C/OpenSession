@@ -43,8 +43,8 @@ export function listSessions(limit = 50, offset = 0, search = "", timeRange = ""
   }
 
   const whereClause = searchTerm
-    ? `WHERE time_archived IS NULL AND (COALESCE(title, '') LIKE ? OR COALESCE(slug, '') LIKE ? OR COALESCE(directory, '') LIKE ?)${timeFilter}`
-    : `WHERE time_archived IS NULL${timeFilter}`;
+    ? `WHERE time_archived IS NULL AND parent_id IS NULL AND (COALESCE(title, '') LIKE ? OR COALESCE(slug, '') LIKE ? OR COALESCE(directory, '') LIKE ?)${timeFilter}`
+    : `WHERE time_archived IS NULL AND parent_id IS NULL${timeFilter}`;
   const searchParams = searchTerm ? [searchTerm, searchTerm, searchTerm] : [];
 
   const sessions = db.prepare(`
