@@ -165,7 +165,9 @@ document.addEventListener("click", (e) => {
     return;
   }
   if (!e.target.closest(".card-menu")) {
-    document.querySelectorAll(".card-menu:not(.hidden)").forEach((menu) => menu.classList.add("hidden"));
+    document.querySelectorAll(".card-menu:not(.hidden)").forEach((menu) => {
+      menu.classList.add("hidden");
+    });
   }
 });
 
@@ -447,3 +449,361 @@ if (scrollSentinel && sessionList && "IntersectionObserver" in window) {
     setSentinelState("scroll-done", ft("scroll_all_loaded"));
   }
 }
+
+let traceData = null;
+let cyInstance = null;
+let currentStepIndex = 0;
+
+function truncateTraceText(value, maxLength = 220) {
+  const text = value == null ? "" : String(value);
+  if (text.length <= maxLength) return text;
+  return `${text.slice(0, maxLength)}…`;
+}
+
+function getTraceStepDuration(step) {
+  const duration = Number(step?.duration);
+  if (Number.isFinite(duration) && duration > 0) return duration;
+  const start = Number(step?.timeStart);
+  const end = Number(step?.timeEnd);
+  if (Number.isFinite(start) && Number.isFinite(end) && end >= start) {
+    return end - start;
+  }
+  return 0;
+}
+
+function updateTraceTitle() {
+  const titleEl = document.getElementById("trace-title");
+  const steps = Array.isArray(traceData?.steps) ? traceData.steps : [];
+  const step = steps[currentStepIndex] || null;
+  if (!titleEl) return;
+  if (!step) {
+    titleEl.textContent = "Trace";
+    return;
+  }
+  titleEl.textContent = `Step ${currentStepIndex + 1}/${steps.length} · ${step.model || "unknown"} · ${Math.max(0, Math.round(getTraceStepDuration(step)))}ms`;
+}
+
+function switchStep(stepIndex) {
+  const steps = Array.isArray(traceData?.steps) ? traceData.steps : [];
+  if (!steps.length) {
+    currentStepIndex = 0;
+    renderTimeline();
+    renderGraph(0);
+    updateTraceTitle();
+    return;
+  }
+  const safeIndex = Math.max(0, Math.min(Number(stepIndex) || 0, steps.length - 1));
+  currentStepIndex = safeIndex;
+  renderTimeline();
+  renderGraph(currentStepIndex);
+  updateTraceTitle();
+}
+
+async function openTracePanel(partId) {
+  const layoutEl = document.querySelector(".two-column");
+  const panelEl = document.getElementById("trace-panel");
+  if (!layoutEl || !panelEl) return;
+
+  const provider = layoutEl.dataset.provider || "";
+  const sessionId = layoutEl.dataset.sessionId || "";
+  if (provider !== "opencode") return;
+  if (!sessionId) return;
+
+  try {
+    const res = await fetch(`/api/${encodeURIComponent(provider)}/session/${encodeURIComponent(sessionId)}/trace`);
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const data = await res.json();
+    traceData = data && typeof data === "object" ? data : { steps: [], summary: null };
+    const steps = Array.isArray(traceData.steps) ? traceData.steps : [];
+    const matchedIndex = steps.findIndex((step) =>
+      Array.isArray(step?.spans) && step.spans.some((span) => String(span?.id || "") === String(partId || ""))
+    );
+    currentStepIndex = matchedIndex >= 0 ? matchedIndex : 0;
+
+    renderTimeline();
+    renderGraph(currentStepIndex);
+    panelEl.classList.add("open");
+    layoutEl.classList.add("trace-open");
+    updateTraceTitle();
+  } catch {
+    traceData = { steps: [], summary: null };
+    currentStepIndex = 0;
+    renderTimeline();
+    renderGraph(0);
+    panelEl.classList.add("open");
+    layoutEl.classList.add("trace-open");
+    updateTraceTitle();
+  }
+}
+
+function closeTracePanel() {
+  const layoutEl = document.querySelector(".two-column");
+  const panelEl = document.getElementById("trace-panel");
+  const detailEl = document.getElementById("trace-node-detail");
+  panelEl?.classList.remove("open");
+  layoutEl?.classList.remove("trace-open");
+  if (cyInstance) {
+    cyInstance.destroy();
+    cyInstance = null;
+  }
+  if (detailEl) detailEl.classList.add("hidden");
+}
+
+function renderTimeline() {
+  const timelineEl = document.getElementById("trace-timeline");
+  if (!timelineEl) return;
+
+  const steps = Array.isArray(traceData?.steps) ? traceData.steps : [];
+  if (!steps.length) {
+    timelineEl.innerHTML = '<div class="trace-empty">No trace data available</div>';
+    return;
+  }
+
+  const content = steps
+    .map((step, stepIndex) => {
+      const spans = Array.isArray(step?.spans) ? step.spans : [];
+      const stepDuration = getTraceStepDuration(step);
+      const stepStart = Number(step?.timeStart);
+      const cost = Number(step?.cost);
+      const tokenTotal = Number(step?.tokens?.total) || 0;
+      const activeCls = stepIndex === currentStepIndex ? " active" : "";
+      const spanRows = spans
+        .map((span) => {
+          const category = String(span?.category || "text");
+          const spanStart = Number(span?.timeStart);
+          const spanDurationRaw = Number(span?.duration);
+          const spanDuration = Number.isFinite(spanDurationRaw) && spanDurationRaw >= 0
+            ? spanDurationRaw
+            : (() => {
+                const spanEnd = Number(span?.timeEnd);
+                if (Number.isFinite(spanStart) && Number.isFinite(spanEnd) && spanEnd >= spanStart) return spanEnd - spanStart;
+                return 0;
+              })();
+          const leftPct = stepDuration > 0 && Number.isFinite(spanStart) && Number.isFinite(stepStart)
+            ? Math.max(0, Math.min(100, ((spanStart - stepStart) / stepDuration) * 100))
+            : 0;
+          const widthPct = stepDuration > 0
+            ? Math.max(Math.min((spanDuration / stepDuration) * 100, 100), 2)
+            : 2;
+          const errorCls = span?.status === "error" ? " status-error" : "";
+          return `
+            <div class="trace-span-row">
+              <div class="trace-span-label" title="${escapeHtmlClient(span?.name || "")}">${escapeHtmlClient(truncateTraceText(span?.name || "", 60))}</div>
+              <div class="trace-span-track">
+                <div class="trace-span-bar cat-${escapeHtmlClient(category)}${errorCls}" style="left:${leftPct.toFixed(2)}%;width:${widthPct.toFixed(2)}%;"></div>
+              </div>
+              <div class="trace-span-time">${Math.max(0, Math.round(spanDuration))}ms</div>
+            </div>
+          `;
+        })
+        .join("");
+
+      return `
+        <section class="trace-step-block">
+          <button class="trace-step-header${activeCls}" type="button" data-trace-step-index="${stepIndex}">
+            Step ${stepIndex + 1} · ${escapeHtmlClient(step?.model || "unknown")} · ${Math.max(0, Math.round(stepDuration))}ms · $${Number.isFinite(cost) ? cost.toFixed(3) : "0.000"} · ${tokenTotal.toLocaleString()} tokens
+          </button>
+          <div class="trace-step-spans">${spanRows}</div>
+        </section>
+      `;
+    })
+    .join("");
+
+  const summary = traceData?.summary || {};
+  const summaryHtml = `
+    <div class="trace-summary-row">
+      <div class="trace-legend">
+        <span class="trace-legend-item"><i class="trace-span-bar cat-reasoning"></i>Reasoning</span>
+        <span class="trace-legend-item"><i class="trace-span-bar cat-tool"></i>Tool</span>
+        <span class="trace-legend-item"><i class="trace-span-bar cat-mcp"></i>MCP</span>
+        <span class="trace-legend-item"><i class="trace-span-bar cat-agent"></i>Agent</span>
+      </div>
+      <div class="trace-summary-totals">${Number(summary.totalSteps) || steps.length} steps · ${Number(summary.totalSpans) || 0} spans · ${Math.max(0, Math.round(Number(summary.totalDuration) || 0))}ms</div>
+    </div>
+  `;
+
+  timelineEl.innerHTML = `${content}${summaryHtml}`;
+}
+
+function renderGraph(stepIndex) {
+  const graphEl = document.getElementById("trace-graph");
+  const detailEl = document.getElementById("trace-node-detail");
+  if (!graphEl) return;
+  if (cyInstance) {
+    cyInstance.destroy();
+    cyInstance = null;
+  }
+  if (detailEl) detailEl.classList.add("hidden");
+
+  const steps = Array.isArray(traceData?.steps) ? traceData.steps : [];
+  const step = steps[stepIndex];
+  const spans = Array.isArray(step?.spans) ? step.spans : [];
+
+  if (!step || !spans.length) {
+    graphEl.innerHTML = '<div class="trace-empty">No trace data available</div>';
+    return;
+  }
+  if (typeof window.cytoscape !== "function") {
+    graphEl.innerHTML = '<div class="trace-empty">No trace data</div>';
+    return;
+  }
+
+  graphEl.innerHTML = "";
+
+  const colorMap = {
+    reasoning: "#8b5cf6",
+    skill: "#f59e0b",
+    mcp: "#10b981",
+    tool: "#06b6d4",
+    lsp: "#3b82f6",
+    agent: "#ec4899",
+    text: "#64748b",
+    invalid: "#475569",
+    start: "#4ade80",
+    end: "#f1f5f9"
+  };
+
+  const elements = [{ data: { id: "start", label: "▶", type: "start", color: colorMap.start, error: 0 } }];
+  spans.forEach((span) => {
+    const type = String(span?.category || "text");
+    const isError = span?.status === "error";
+    elements.push({
+      data: {
+        id: String(span?.id || `span-${Math.random().toString(36).slice(2, 8)}`),
+        label: String(span?.name || "span"),
+        type,
+        duration: Math.max(0, Number(span?.duration) || 0),
+        status: String(span?.status || "unknown"),
+        input: span?.input,
+        output: span?.output,
+        color: colorMap[type] || colorMap.invalid,
+        error: isError ? 1 : 0
+      }
+    });
+  });
+  elements.push({ data: { id: "end", label: "■", type: "end", color: colorMap.end, error: 0 } });
+
+  const chain = ["start", ...spans.map((span) => String(span?.id || "")), "end"].filter(Boolean);
+  for (let i = 0; i < chain.length - 1; i += 1) {
+    elements.push({ data: { id: `edge-${i}-${chain[i]}-${chain[i + 1]}`, source: chain[i], target: chain[i + 1] } });
+  }
+
+  cyInstance = window.cytoscape({
+    container: graphEl,
+    elements,
+    style: [
+      {
+        selector: "node",
+        style: {
+          "background-color": "data(color)",
+          label: "data(label)",
+          color: "#e2e8f0",
+          "font-size": 10,
+          "text-wrap": "wrap",
+          "text-max-width": 140,
+          "text-valign": "center",
+          "text-halign": "center",
+          shape: "round-rectangle",
+          width: "label",
+          height: 34,
+          padding: "8px",
+          "border-width": "mapData(error, 0, 1, 0, 2)",
+          "border-color": "#ef4444"
+        }
+      },
+      {
+        selector: 'node[type = "start"], node[type = "end"]',
+        style: {
+          shape: "ellipse",
+          width: 28,
+          height: 28,
+          color: "#0f172a",
+          "font-size": 14,
+          "font-weight": 700,
+          padding: 0
+        }
+      },
+      {
+        selector: "edge",
+        style: {
+          width: 1.5,
+          "line-color": "#64748b",
+          "target-arrow-color": "#64748b",
+          "target-arrow-shape": "triangle",
+          "curve-style": "bezier"
+        }
+      }
+    ],
+    layout: {
+      name: "breadthfirst",
+      directed: true,
+      spacingFactor: 1.2,
+      padding: 20
+    }
+  });
+
+  cyInstance.on("tap", "node", (event) => {
+    const node = event.target;
+    const data = node?.data?.() || {};
+    if (!detailEl) return;
+    detailEl.innerHTML = `
+      <div><strong>${escapeHtmlClient(data.label || "")}</strong></div>
+      <div>Category: ${escapeHtmlClient(data.type || "")}</div>
+      <div>Duration: ${Math.max(0, Math.round(Number(data.duration) || 0))}ms</div>
+      <div>Status: ${escapeHtmlClient(data.status || "unknown")}</div>
+      <div>Input: ${escapeHtmlClient(truncateTraceText(data.input, 180) || "-")}</div>
+      <div>Output: ${escapeHtmlClient(truncateTraceText(data.output, 180) || "-")}</div>
+    `;
+    detailEl.classList.remove("hidden");
+  });
+
+  cyInstance.on("tap", (event) => {
+    if (event.target === cyInstance && detailEl) {
+      detailEl.classList.add("hidden");
+    }
+  });
+}
+
+document.addEventListener("click", (e) => {
+  const stepHeader = e.target.closest("[data-trace-step-index]");
+  if (!stepHeader) return;
+  switchStep(Number(stepHeader.dataset.traceStepIndex) || 0);
+});
+
+document.addEventListener("click", (e) => {
+  const tabBtn = e.target.closest(".trace-tab");
+  if (!tabBtn) return;
+  const panel = tabBtn.closest("#trace-panel") || document;
+  const targetId = tabBtn.dataset.tab || "";
+  if (!targetId) return;
+
+  panel.querySelectorAll?.(".trace-tab").forEach((el) => {
+    el.classList.remove("active");
+  });
+  panel.querySelectorAll?.(".trace-tab-content").forEach((el) => {
+    el.classList.remove("active");
+  });
+  tabBtn.classList.add("active");
+  const target = document.getElementById(targetId);
+  if (target) target.classList.add("active");
+  if (targetId === "trace-graph") {
+    if (traceData) renderGraph(currentStepIndex);
+    setTimeout(() => {
+      cyInstance?.resize();
+    }, 50);
+  }
+});
+
+document.addEventListener("click", async (e) => {
+  const toolCall = e.target.closest(".tool-call[data-part-id]");
+  if (!toolCall) return;
+  const partId = toolCall.dataset.partId || "";
+  if (!partId) return;
+  await openTracePanel(partId);
+});
+
+document.addEventListener("click", (e) => {
+  const closeBtn = e.target.closest(".trace-panel-close");
+  if (!closeBtn) return;
+  closeTracePanel();
+});
