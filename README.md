@@ -333,7 +333,7 @@ KEY FACTS:
 
 **🔮 Agent / Skill / MCP / Tool / LSP 可视化**
 - [x] 会话内调用链路树：展示 Agent 委派、Skill 触发、MCP Server 交互、Tool 执行、LSP 操作的完整思考链路
-- [x] Agent 具名化：Sisyphus / Momus / Explorer / Librarian / Junior 等
+- [x] Agent 具名化
 - [x] 按时间顺序排列，步骤可折叠，层级缩进（Agent → 子调用）
 - [ ] 节点级耗时分析优化：瀑布时间线视图
 - [ ] 思考链路回放：按时间线还原 AI 的决策过程
