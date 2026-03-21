@@ -33,7 +33,7 @@ export function layout(title, body, page = "home", { provider = null, providers 
 <body data-page="${page}" data-provider="${provider || ""}">
   <nav class="topbar">
     <a href="${providerPrefix || "/"}" class="logo">${icons.opensession}<span class="logo-text">OpenSession</span></a>
-    ${providerTabs}
+    <div class="topbar-tabs">${providerTabs}</div>
     <div class="topbar-actions">
       <a href="${providerPrefix}/stats" class="nav-link">${t("nav.stats")}</a>
       ${provider === "opencode" ? `<a href="${providerPrefix}/trash" class="nav-link">${t("nav.trash")}</a>` : ""}
