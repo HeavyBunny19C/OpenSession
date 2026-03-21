@@ -1,5 +1,5 @@
 {
-  "name": "opensession",
+  "name": "@heavybunny19c_lee/opensession",
   "version": "1.0.0",
   "description": "A web-based session viewer for AI coding tools — browse, search, and manage sessions from OpenCode, Claude Code, Codex CLI, and Gemini CLI.",
   "type": "module",
