@@ -74,7 +74,7 @@ export function recordsToMessages(records, sessionId) {
     const ts = r.timestamp ? new Date(r.timestamp).getTime() : 0;
 
     if (r.type === "user") {
-      const text = extractTextContent(r.message?.content);
+      const text = extractTextContent(r.message?.content ?? r.content);
       if (text) {
         messages.push({
           id: r.uuid || `msg-${msgIndex++}`,
@@ -93,7 +93,8 @@ export function recordsToMessages(records, sessionId) {
     }
 
     if (r.type === "assistant") {
-      const contentBlocks = r.message?.content || [];
+      const contentBlocks = r.message?.content ?? r.content ?? [];
+      const usage = r.message?.usage ?? r.usage;
       let text = "";
       let thinking = null;
 
@@ -128,21 +129,22 @@ export function recordsToMessages(records, sessionId) {
           toolInput: null,
           toolOutput: null,
           timestamp: ts,
-          tokens: r.message?.usage
-            ? { input: r.message.usage.input_tokens || 0, output: r.message.usage.output_tokens || 0 }
+          tokens: usage
+            ? { input: usage.input_tokens || 0, output: usage.output_tokens || 0 }
             : null,
           metadata: {
             model: r.message?.model || null,
             stopReason: r.message?.stop_reason || null,
-            cacheRead: r.message?.usage?.cache_read_input_tokens || 0,
-            cacheCreation: r.message?.usage?.cache_creation_input_tokens || 0
+            cacheRead: usage?.cache_read_input_tokens || 0,
+            cacheCreation: usage?.cache_creation_input_tokens || 0
           }
         });
       }
     }
 
     if (r.type === "tool_result") {
-      const content = typeof r.content === "string" ? r.content : JSON.stringify(r.content || "");
+      const rawContent = r.tool_output ?? r.content;
+      const content = typeof rawContent === "string" ? rawContent : JSON.stringify(rawContent || "");
       messages.push({
         id: `tool-result-${msgIndex++}`,
         sessionId,
@@ -151,10 +153,25 @@ export function recordsToMessages(records, sessionId) {
         thinking: null,
         toolName: r.tool_name || "tool_result",
         toolInput: null,
-        toolOutput: r.content,
+        toolOutput: rawContent,
         timestamp: ts,
         tokens: null,
         metadata: { isError: r.is_error || false }
+      });
+    }
+    if (r.type === "tool_use") {
+      messages.push({
+        id: r.uuid || `tool-${msgIndex++}`,
+        sessionId,
+        role: "tool",
+        content: "",
+        thinking: null,
+        toolName: r.tool_name || r.name || "unknown",
+        toolInput: r.tool_input || r.input || null,
+        toolOutput: null,
+        timestamp: ts,
+        tokens: null,
+        metadata: null
       });
     }
   }

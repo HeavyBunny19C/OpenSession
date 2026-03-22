@@ -1,5 +1,4 @@
 import { existsSync, readdirSync, lstatSync } from "node:fs";
-import { execSync } from "node:child_process";
 import path from "node:path";
 import { getConfig } from "../../config.mjs";
 import { parseTranscript, extractSessionMeta, recordsToMessages } from "./parser.mjs";
@@ -7,15 +6,6 @@ import { icons } from "../../icons.mjs";
 
 function getClaudeDir() {
   return getConfig().claudeDir;
-}
-
-function isCliInstalled() {
-  try {
-    execSync("which claude", { stdio: "ignore" });
-    return true;
-  } catch {
-    return false;
-  }
 }
 
 /**
@@ -71,7 +61,6 @@ const claudeCode = {
   icon: icons.claude,
 
   detect() {
-    if (!isCliInstalled()) return false;
     const claudeDir = getClaudeDir();
     const transcripts = path.join(claudeDir, "transcripts");
     const projects = path.join(claudeDir, "projects");
@@ -186,12 +175,12 @@ const claudeCode = {
 
 function extractTextFromRecord(r) {
   if (r.type === "user") {
-    const content = r.message?.content;
+    const content = r.message?.content ?? r.content;
     if (typeof content === "string") return content;
     if (Array.isArray(content)) return content.filter((b) => b.type === "text").map((b) => b.text).join("");
   }
   if (r.type === "assistant") {
-    const content = r.message?.content || [];
+    const content = r.message?.content ?? r.content ?? [];
     return content.filter((b) => b.type === "text").map((b) => b.text).join("");
   }
   return "";
