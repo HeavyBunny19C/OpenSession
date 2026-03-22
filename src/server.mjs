@@ -95,11 +95,6 @@ function safeDecodeId(encoded) {
   }
 }
 
-function safeError(err) {
-  console.error("Request error:", err?.message || err);
-  return "Internal server error";
-}
-
 function json(res, data, status = 200) {
   res.writeHead(status, { "Content-Type": "application/json; charset=utf-8" });
   res.end(JSON.stringify(data));

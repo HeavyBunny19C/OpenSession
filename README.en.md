@@ -46,12 +46,12 @@ Search, browse, star, export, stats — dark mode, terminal aesthetic, zero depe
 
 | Tool | Status | Capabilities |
 |:---|:---:|:---|
-| **OpenCode** | ✅ Full | Browse, search, star, rename, delete, export |
-| **Claude Code** | ✅ Read | Browse, search, export |
-| **Codex CLI** | 🔜 Ready | Adapter built, auto-detected when installed |
-| **Gemini CLI** | 🔜 Ready | Adapter built, auto-detected when installed |
+| **OpenCode** | ✅ Full | Browse, search, star, rename, delete, export, trace |
+| **Claude Code** | 📖 Read-only | Browse, search, token stats |
+| **Codex CLI** | 📖 Read-only | Browse, search, token stats |
+| **Gemini CLI** | 📖 Read-only | Browse, search, token stats |
 
-> Auto-detection: OpenSession scans default data directories on startup. Detected tools appear in the top bar; undetected ones are grayed out.
+> Smart path detection: probes env vars, XDG, dotfiles, macOS ~/Library, Windows %AppData%. Star/rename/delete/batch/export are OpenCode-only.
 
 ---
 
@@ -106,7 +106,7 @@ npm uninstall -g @heavybunny19c_lee/opensession
 | 🖥️ | **Terminal aesthetic** | Code block cards + grid background |
 | 🔍 | **Search & filter** | By keyword, time range, across all providers |
 | ⭐ | **Star & rename** | Mark important sessions (OpenCode) |
-| 📤 | **Export** | JSON / Markdown / Plain text |
+| 📤 | **Export** | JSON / Markdown (OpenCode) |
 | 🗑️ | **Soft delete** | Recoverable trash bin (OpenCode) |
 | 📊 | **Token stats** | Daily token usage charts |
 | 🔮 | **Trace visualization** | Agent/Skill/MCP/Tool/LSP call chain tree — see how AI thinks |
@@ -136,7 +136,7 @@ Option                  Description                     Default
 |:---|:---|
 | `PORT` | Server port (`--port` takes priority) |
 | `SESSION_VIEWER_DB_PATH` | OpenCode DB path (`--opencode-db` takes priority) |
-| `OPENSESSION_META_PATH` | Metadata DB path |
+| `OH_MY_OPENSESSION_META_PATH` | Metadata DB directory |
 
 ---
 

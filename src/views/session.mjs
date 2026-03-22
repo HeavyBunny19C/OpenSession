@@ -101,8 +101,6 @@ ${actions}
     return renderedParts ? `<article class="message-group">${renderedParts}</article>` : "";
   }).filter(Boolean).join("\n");
 
-  const sidebarCards = (recentSessions || []).map(s => sessionCard(s, s.id === session.id, { provider })).join("\n");
-
   const body = `
 <div class="two-column" data-session-id="${escapeHtml(session.id)}" data-provider="${escapeHtml(provider)}">
   <div class="main-content">

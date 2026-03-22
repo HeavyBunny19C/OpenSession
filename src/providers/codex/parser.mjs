@@ -1,6 +1,4 @@
 import { readFileSync } from "node:fs";
-import { globSync } from "node:fs";
-import path from "node:path";
 
 /**
  * Parse a Codex CLI JSONL session file.

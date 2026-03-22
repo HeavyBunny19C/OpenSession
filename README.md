@@ -47,11 +47,11 @@
 | 工具 | 状态 | 会话来源 |
 |:---|:---:|:---|
 | [OpenCode](https://opencode.ai) | ✅ 完整支持 | `~/.local/share/opencode/opencode.db` |
-| [Claude Code](https://docs.anthropic.com/en/docs/claude-code) | ✅ 完整支持 | `~/.claude/projects/` |
-| [Codex CLI](https://github.com/openai/codex) | ✅ 完整支持 | `~/.codex/sessions/` |
-| [Gemini CLI](https://github.com/google-gemini/gemini-cli) | ✅ 完整支持 | `~/.gemini/tmp/` |
+| [Claude Code](https://docs.anthropic.com/en/docs/claude-code) | 📖 只读浏览 | `~/.claude/transcripts/` + `~/.claude/projects/` |
+| [Codex CLI](https://github.com/openai/codex) | 📖 只读浏览 | `~/.codex/sessions/**/*.jsonl` |
+| [Gemini CLI](https://github.com/google-gemini/gemini-cli) | 📖 只读浏览 | `~/.gemini/tmp/*/chats/*.json` |
 
-> 自动检测已安装的工具，未安装的会在顶栏灰显。无需手动配置。
+> 自动检测已安装的工具，支持多路径智能探测。收藏/重命名/删除/批量操作/导出仅 OpenCode 支持，其他 Provider 为只读浏览。
 
 ---
 
@@ -174,10 +174,10 @@ rd /s /q "%APPDATA%\oh-my-opensession"
 | 🖥️ | **终端美学** | 代码块卡片 + 网格背景，看着就想写代码 |
 | 🔍 | **搜索 & 筛选** | 按关键词、时间范围快速定位，告别大海捞针 |
 | ♾️ | **无限滚动** | 丝滑加载，不用翻页翻到手酸 |
-| ⭐ | **收藏** | 给重要会话打个星，下次一秒找到 |
-| ✏️ | **重命名** | 「untitled-session-47」？不存在的 |
-| 🗑️ | **软删除** | 手滑删错？回收站救你 |
-| 📤 | **导出** | Markdown / JSON 一键导出，写博客素材有了 |
+| ⭐ | **收藏** | 给重要会话打个星，下次一秒找到（OpenCode） |
+| ✏️ | **重命名** | 「untitled-session-47」？不存在的（OpenCode） |
+| 🗑️ | **软删除** | 手滑删错？回收站救你（OpenCode） |
+| 📤 | **导出** | Markdown / JSON 一键导出（OpenCode） |
 | 📊 | **Token 统计** | 消耗趋势、模型分布，钱花哪了一目了然 |
 | 🔮 | **Trace 可视化** | Agent/Skill/MCP/Tool/LSP 调用链路树，AI 的思考过程一览无余 |
 | 🗂️ | **批量操作** | 多选收藏/删除，效率拉满 |
@@ -237,21 +237,27 @@ rd /s /q "%APPDATA%\oh-my-opensession"
 src/
 ├── providers/           # Provider 适配器（插件式架构）
 │   ├── interface.mjs    # 统一接口定义
+│   ├── index.mjs        # Provider 注册表
 │   ├── opencode/        # OpenCode 适配器（SQLite）
 │   ├── claude-code/     # Claude Code 适配器（JSONL）
-│   ├── codex/           # Codex CLI 适配器（JSON）
+│   ├── codex/           # Codex CLI 适配器（JSONL）
 │   └── gemini/          # Gemini CLI 适配器（JSON）
 ├── views/               # 服务端渲染模板
 ├── static/              # 前端 CSS + JS
+├── locales/             # 国际化（en.mjs / zh.mjs）
+├── icons.mjs            # Provider SVG 图标
 ├── index-db.mjs         # 跨 Provider 会话索引
 ├── meta.mjs             # 元数据（收藏/重命名/删除）
+├── db.mjs               # OpenCode 数据库查询
+├── markdown.mjs         # Markdown 渲染
+├── i18n.mjs             # 国际化加载
 ├── server.mjs           # HTTP 路由
-└── config.mjs           # 配置解析
+└── config.mjs           # 配置解析 + 多路径探测
 ```
 
 ### 添加新 Provider
 
-参考 `docs/CONTRIBUTING-PROVIDERS.md`，实现 `ProviderAdapter` 接口即可接入新工具。
+参考 `docs/CONTRIBUTING-PROVIDER.md`，实现 `ProviderAdapter` 接口即可接入新工具。
 
 ---
 
@@ -260,13 +266,13 @@ src/
 <details>
 <summary><strong>Q: 启动后看不到某个工具的会话？</strong></summary>
 
-确认该工具已安装且有会话数据。OpenSession 会自动检测以下路径：
-- OpenCode: `~/.local/share/opencode/opencode.db`
-- Claude Code: `~/.claude/projects/`
-- Codex CLI: `~/.codex/sessions/`
-- Gemini CLI: `~/.gemini/tmp/`
+确认该工具已安装且有会话数据。OpenSession 会自动探测以下路径（按优先级）：
+- OpenCode: `$XDG_DATA_HOME/opencode/opencode.db` → `~/.local/share/opencode/opencode.db`
+- Claude Code: `$CLAUDE_CONFIG_DIR` → `~/.claude/transcripts/` + `~/.claude/projects/`
+- Codex CLI: `$CODEX_HOME` → `~/.codex/sessions/**/*.jsonl`
+- Gemini CLI: `$GEMINI_HOME` → `~/.gemini/tmp/*/chats/*.json`
 
-如果路径不同，用对应的 `--xxx-dir` 参数指定。
+也支持 macOS `~/Library/Application Support/` 和 Windows `%AppData%` 路径。如果自动检测不到，用 `--xxx-dir` 参数手动指定。
 </details>
 
 <details>
@@ -339,7 +345,6 @@ KEY FACTS:
 - Claude Code 解析器双格式支持 — 顶层记录格式 + 嵌套 message 格式均可解析
 - 新增 `tool_use` 记录类型解析
 - 重建索引时清除旧数据 — 删除/移动的文件不再残留在索引中
-- Codex Session ID 统一 — scan/getSession/searchMessages 使用一致的 canonical ID
 
 **🚫 Subagent 过滤**
 - OpenCode 会话列表只显示用户发起的对话（`parent_id IS NULL`）— 过滤 85% 的自动化子 agent 会话

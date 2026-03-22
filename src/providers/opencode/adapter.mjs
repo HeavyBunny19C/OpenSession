@@ -5,18 +5,12 @@ import { existsSync } from "node:fs";
 import { getConfig } from "../../config.mjs";
 import { icons } from "../../icons.mjs";
 import {
-  getDb,
   listSessions,
   getSession as dbGetSession,
   getMessages as dbGetMessages,
   getParts,
-  getTodos,
   searchMessages as dbSearchMessages,
   getTokenStats as dbGetTokenStats,
-  getModelDistribution,
-  getDailySessionCounts,
-  getSessionsByIds,
-  getStats
 } from "../../db.mjs";
 import { parseJson } from "./parser.mjs";
 
