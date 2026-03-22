@@ -27,9 +27,9 @@ function defaultClaudeDir() {
 
 function defaultCodexDir() {
   if (process.platform === "win32") {
-    return path.join(process.env.USERPROFILE || os.homedir(), ".codex", "sessions");
+    return path.join(process.env.USERPROFILE || os.homedir(), ".codex");
   }
-  return path.join(os.homedir(), ".codex", "sessions");
+  return path.join(os.homedir(), ".codex");
 }
 
 function defaultGeminiDir() {
@@ -85,7 +85,7 @@ Options:
   --port <number>       Server port (default: 3456, env: PORT)
   --opencode-db <path>  Path to opencode.db (alias: --db, env: SESSION_VIEWER_DB_PATH)
   --claude-dir <path>   Path to Claude CLI data dir (default: ~/.claude)
-  --codex-dir <path>    Path to Codex sessions dir (default: ~/.codex/sessions)
+  --codex-dir <path>    Path to Codex data dir (default: ~/.codex)
   --gemini-dir <path>   Path to Gemini data dir (default: ~/.gemini/tmp)
   --reindex             Force full reindex of all providers on start
   --lang <en|zh>        UI language (default: auto-detect from LANG)
